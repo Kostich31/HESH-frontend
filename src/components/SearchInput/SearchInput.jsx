@@ -1,4 +1,4 @@
-import { Button, Input } from "@vkontakte/vkui";
+import { Input } from "@vkontakte/vkui";
 import { Icon16SearchOutline } from "@vkontakte/icons";
 import styles from "./SearchInput.module.css";
 const SearchInput = () => {

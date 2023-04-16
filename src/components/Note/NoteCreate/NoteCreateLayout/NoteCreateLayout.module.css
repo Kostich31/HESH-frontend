@@ -1,0 +1,38 @@
+.container {
+    justify-content: center;
+}
+
+.uploadButtonContainer {
+    display: flex;
+    justify-content: center;
+}
+
+.imageContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+}
+
+.scrollContainer {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.imageContainer > div {
+    display: flex;
+}
+
+.image {
+    margin-left: 100px;
+}
+
+.simptomContainer .vkuiSimpleCell__content {
+    display: block;
+}
+
+.picker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

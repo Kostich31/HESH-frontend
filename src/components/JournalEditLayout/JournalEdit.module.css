@@ -1,0 +1,8 @@
+.container {
+    justify-content: center;
+}
+
+.confirmButtonContainer {
+    display: flex;
+    justify-content: center;
+}

@@ -1,0 +1,8 @@
+.container {
+    justify-content: center;
+}
+
+.uploadButtonContainer {
+    display: flex;
+    justify-content: center;
+}
