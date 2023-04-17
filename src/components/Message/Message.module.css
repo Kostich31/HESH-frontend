@@ -1,0 +1,18 @@
+.message {
+  padding: 14px 6px 14px 12px;
+  background: #F7F8FA;
+  max-width: 70%;
+  border: 1px solid #DCE1E6;
+  border-radius: 6px;
+}
+
+.text {
+  color: #000000;
+  font-size: 15px;
+  letter-spacing: -0.24px;
+}
+
+.time {
+  color: #C1C1C1;
+  font-size: 16px;
+}

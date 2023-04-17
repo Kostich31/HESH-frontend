@@ -13,6 +13,7 @@ import {
 import { PanelTypes } from '../../router/structure';
 import BackendService from '../../service/BackendService';
 import { DropdownJournal } from '../Dropdown/DropdownJournal';
+import {setActiveDiaryId, updateCommentsList} from "../../store/chat/chatSlice";
 
 interface JournalCardsProps {
   id: number;
@@ -36,6 +37,7 @@ const JournalCard = ({
   const { toPanel } = useRouterActions();
   const dispatch = useAppDispatch();
   const isMedic = BackendService.getRole();
+
   const onEditClick = async () => {
     const diary: DiaryResponse = await BackendService.getDiary(id);
     dispatch(addJournalInfo(diary.diary.diarybasicinfo));
@@ -48,7 +50,10 @@ const JournalCard = ({
     dispatch(removeJournal(id));
   };
 
-  const onChatClick = () => {};
+  const onChatClick = () => {
+    dispatch(setActiveDiaryId(id));
+    toPanel(PanelTypes.DOCTOR_WITH_PATIENT_CHAT);
+  };
 
   const onMoreClick = () => {
     toPanel(PanelTypes.JOURNAL_SINGLE_DETAILED);

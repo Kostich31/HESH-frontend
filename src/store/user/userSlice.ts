@@ -12,12 +12,14 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     initUser(state, action: PayloadAction<User>) {
-      console.log(action.payload);
+      // console.log(action.payload);
       state = action.payload;
-      console.log(state);
+      // console.log(state);
     },
   },
 });
+
+export const selectUserId = (state) => state.user.vkID;
 
 export const { initUser } = userSlice.actions;
 

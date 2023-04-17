@@ -1,0 +1,26 @@
+.chatScreen {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 88vh;
+  gap: 50px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.sendMessageBlock {
+  display: flex;
+  justify-content: space-between;
+}
+
+.input {
+  width: 90%;
+}
+
+.sendButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2688EB;
+  width: 10%;
+}

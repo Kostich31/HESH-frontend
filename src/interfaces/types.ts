@@ -146,3 +146,13 @@ export type User = {
   role: Roles | null;
   name: string;
 };
+
+export type MessageType = {
+  id: number;
+  basiccommentinfo: {
+    text: string;
+  };
+  authorIsMedic: boolean;
+  isreaded: boolean;
+  creatingdate: string;
+};

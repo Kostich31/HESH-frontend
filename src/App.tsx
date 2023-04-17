@@ -33,6 +33,7 @@ import { NoteAudioText } from './panels/NoteAudioText';
 import RegisterPatient from './panels/RegisterPatient';
 import { useAuth } from './service/hooks/useAuth';
 import BackendService from './service/BackendService';
+import Comments from "./panels/Comments";
 export default function App() {
   const { toView, toBack, toPanel } = useRouterActions();
   const [loading, setLoading] = useState(true);
@@ -124,6 +125,14 @@ export default function App() {
                   Редактирование записи
                 </PanelHeader>
                 <NoteEdit />
+              </Panel>
+              <Panel id={PanelTypes.DOCTOR_WITH_PATIENT_CHAT}>
+                <PanelHeader
+                  before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
+                >
+                  Комментировать
+                </PanelHeader>
+                <Comments />
               </Panel>
               <Panel id={PanelTypes.NOTE_CREATE_INFO}>
                 <PanelHeader

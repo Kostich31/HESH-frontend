@@ -42,7 +42,6 @@ export const DropdownJournal = ({
             mode="tertiary"
             align="left"
             stretched
-            disabled
             onClick={(e) => {
               e.stopPropagation();
               onChatClick();

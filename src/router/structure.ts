@@ -26,6 +26,8 @@ export enum PanelTypes {
   REGISTER_CHOOSE = 'REGISTER_CHOOSE',
   REGISTER_PATIENT = 'REGISTER_PATIENT',
   NOTE_AUDIO_TEXT = 'NOTE_AUDIO_TEXT',
+  DOCTOR_NOTE_CHAT = 'DOCTOR_NOTE_CHAT',
+  DOCTOR_WITH_PATIENT_CHAT = 'DOCTOR_WITH_PATIENT_CHAT',
 }
 
 const structure: IStructure = [
@@ -80,6 +82,14 @@ const structure: IStructure = [
       {
         id: PanelTypes.NOTE_AUDIO_TEXT,
         hash: '/note/audio/text',
+      },
+      {
+        id: PanelTypes.DOCTOR_NOTE_CHAT,
+        hash: '/note',
+      },
+      {
+        id: PanelTypes.DOCTOR_WITH_PATIENT_CHAT,
+        hash: '/chat-with-doctor',
       },
     ],
   },
