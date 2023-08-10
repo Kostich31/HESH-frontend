@@ -3,7 +3,7 @@ import {
   Icon24CheckCircleOutline,
   Icon24DoNotDisturb,
   Icon24MoreVertical,
-  Icon24CommentOutline,
+  Icon24ErrorCircleOutline,
 } from '@vkontakte/icons';
 import { ButtonGroup, Button, IconButton } from '@vkontakte/vkui';
 import { Popover } from '@vkontakte/vkui/dist/components/Popover/Popover';
@@ -27,29 +27,13 @@ export const DropdownJournal = ({
   isMedic,
 }: IDropdownJournalProps) => {
   const [shown, setShown] = useState<boolean>(false);
-
   return (
     <Popover
-      action="click"
+      action="hover"
       shown={shown}
       onShownChange={setShown}
       content={
         <ButtonGroup mode="vertical" align="left">
-          <Button
-            size="l"
-            before={<Icon24CommentOutline />}
-            appearance="accent"
-            mode="tertiary"
-            align="left"
-            stretched
-            disabled
-            onClick={(e) => {
-              e.stopPropagation();
-              onChatClick();
-            }}
-          >
-            Комментировать
-          </Button>
           {isMedic && (
             <>
               <Button
@@ -68,7 +52,7 @@ export const DropdownJournal = ({
               </Button>
               <Button
                 size="l"
-                before={<Icon24CheckCircleOutline />}
+                before={<Icon24ErrorCircleOutline />}
                 appearance="accent"
                 mode="tertiary"
                 align="left"
@@ -87,9 +71,9 @@ export const DropdownJournal = ({
                 mode="tertiary"
                 align="left"
                 stretched
-                disabled
                 onClick={(e) => {
                   e.stopPropagation();
+                  setShown(false);
                   onCompleteClick();
                 }}
               >
@@ -104,6 +88,7 @@ export const DropdownJournal = ({
                 stretched
                 onClick={(e) => {
                   e.stopPropagation();
+                  setShown(false);
                   onDeleteClick();
                 }}
               >
@@ -114,12 +99,11 @@ export const DropdownJournal = ({
         </ButtonGroup>
       }
     >
-      <IconButton size={24} style={{ display: 'flex' }}>
+      <IconButton size={24} style={{ display: 'flex', marginLeft: '2px' }}>
         <Icon24MoreVertical
           width={24}
           height={24}
           onClick={(e) => e.stopPropagation()}
-          fill="black"
         />
       </IconButton>
     </Popover>

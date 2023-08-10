@@ -17,8 +17,8 @@ const JournalEdit = () => {
       id as number,
       createState
     );
-    dispatch(addJournalInfo(updatedJournal.diarybasicinfo));
     toBack();
+    dispatch(addJournalInfo(updatedJournal.diarybasicinfo));
   }
 
   const onCancelClick = () => {

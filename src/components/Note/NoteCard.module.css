@@ -1,6 +1,12 @@
 .card {
   padding: 10px;
   margin-bottom: 36px;
+  padding-right: 0px;
+  cursor: pointer;
+}
+
+.card:hover {
+  opacity: 0.7;
 }
 
 .circle {
@@ -24,11 +30,11 @@
 }
 
 .date {
-  color: #c1c1c1;
+  color: #545454;
   font-family: "Roboto";
   font-style: normal;
   font-weight: 400;
-  font-size: 12px;
+  font-size: 18px;
   line-height: 14px;
 }
 

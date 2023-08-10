@@ -4,12 +4,16 @@ import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
 import journalSlice from './journal/journalSlice';
 import noteSlice from './note/noteSlice';
 import userSlice from './user/userSlice';
+import chatSlice from './chat/chatSlice';
+import noteChatSlice from './noteChat/noteChatSlice';
 
 const store = configureStore({
   reducer: {
     journal: journalSlice,
     note: noteSlice,
     user: userSlice,
+    chat: chatSlice,
+    noteChat: noteChatSlice,
   },
 });
 

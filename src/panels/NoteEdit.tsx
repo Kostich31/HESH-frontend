@@ -18,12 +18,16 @@ const NoteEdit = () => {
     dispatch(addNote(response));
     toBack();
   }
-  async function onConfirmClickPatient(
-    id: number,
-    createState: NotePatientBasicInfo
-  ) {
-    await BackendService.editNote(id, createState, 'patient');
-    const response = await BackendService.getNote(id, 'patient');
+  async function onConfirmClickPatient(id: number, createState: any) {
+    await BackendService.editNote(
+      id,
+      createState,
+      isMedic ? 'medic' : 'patient'
+    );
+    const response = await BackendService.getNote(
+      id,
+      isMedic ? 'medic' : 'patient'
+    );
     dispatch(addNote(response));
     toBack();
   }

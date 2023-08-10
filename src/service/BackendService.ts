@@ -16,30 +16,44 @@ class BackendService {
         mode: 'cors',
       }
     );
-    console.log(user.headers)
     if (Object.fromEntries(user.headers)['x-message'] !== undefined) {
       return { name: '' };
     } else {
-      console.log('dont need to register');
       const userInfo = await user.json();
       return userInfo;
     }
   }
 
-  async registerUser(name: string, type: string, diaryid?: number) {
-    console.log('getInfo');
+  async registerUser(
+    name: string,
+    type: string,
+    diaryid?: number,
+    token?: string
+  ) {
     const data: { name: string; diaryid?: number } = { name };
     if (diaryid) {
       data.diaryid = diaryid;
     }
-
+    const linktoken = token ? `&linktoken=${token}` : '';
     const user = await fetch(
-      `${this.currentUrl}${this.prefix}/authorization/register/${type}?vk_user_id=${this.userId}`,
+      `${this.currentUrl}${this.prefix}/authorization/register/${type}?vk_user_id=${this.userId}${linktoken}`,
       {
         mode: 'cors',
         method: 'POST',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    const userInfo = await user.json();
+    return userInfo;
+  }
+
+  async acceptInviteLink(diaryId: number, token: string) {
+    const user = await fetch(
+      `${this.currentUrl}${this.prefix}/diary/link/${diaryId}?vk_user_id=${this.userId}&linktoken=${token}`,
+      {
+        mode: 'cors',
+        method: 'POST',
       }
     );
     const userInfo = await user.json();
@@ -57,7 +71,6 @@ class BackendService {
     return diary;
   }
   async getAllDiary() {
-    console.log('getInfo');
     const response = await fetch(
       `${this.currentUrl}${this.prefix}/diary/get?vk_user_id=${this.userId}`,
       {
@@ -99,6 +112,11 @@ class BackendService {
   }
 
   async createDiary(data: DiaryBasicInfo) {
+    data.reminder.startdate = new Date(data.reminder.startdate)
+      .toLocaleDateString()
+      .split('.')
+      .reverse()
+      .join('.');
     const response = await fetch(
       `${this.currentUrl}${this.prefix}/diary/create?vk_user_id=${this.userId}`,
       {
@@ -111,6 +129,21 @@ class BackendService {
     return await response.json();
   }
 
+  async completeDiary(id: number) {
+    const response = await fetch(
+      `${this.currentUrl}${this.prefix}/diary/complete/${id}?vk_user_id=${this.userId}`,
+      {
+        method: 'POST',
+        mode: 'cors',
+      }
+    );
+    if (response.ok) {
+      return 'success';
+    } else {
+      return '';
+    }
+  }
+
   async getNote(id: number, type: string) {
     const response = await fetch(
       `${this.currentUrl}${this.prefix}/record/${type}/get/${id}?vk_user_id=${this.userId}`,
@@ -121,7 +154,7 @@ class BackendService {
     return await response.json();
   }
   async createNote(data: FormData, id: number, type: string) {
-    const response = await fetch(
+    await fetch(
       `${this.currentUrl}${this.prefix}/record/${type}/create/${id}?vk_user_id=${this.userId}`,
       {
         mode: 'cors',
@@ -130,7 +163,6 @@ class BackendService {
         // headers: { 'Content-Type': 'application/json' },
       }
     );
-    console.log(response.json());
   }
   async editNote(id: number, data: any, type: string) {
     const response = await fetch(
@@ -174,14 +206,128 @@ class BackendService {
     );
     return await response.json();
   }
-  // async getText(id: number) {
-  //   const response = await fetch(
-  //     `${this.currentUrl}${this.prefix}/record/medic/delete/${id}?vk_user_id=${this.userId}`,
-  //     {
-  //       mode: 'cors',
-  //     }
-  //   );
-  // }
+
+  async getComment(id: number) {
+    const response = await fetch(
+      `${this.currentUrl}${this.prefix}/comment/get/${id}?vk_user_id=${this.userId}`,
+      {
+        mode: 'cors',
+      }
+    );
+    return await response.json();
+  }
+
+  async createComment(data: { text: string }, id: number) {
+    const response = await fetch(
+      `${this.currentUrl}${this.prefix}/comment/create/${id}?vk_user_id=${this.userId}`,
+      {
+        mode: 'cors',
+        method: 'POST',
+        body: JSON.stringify(data),
+        // headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    const message = await response.json();
+    return message;
+  }
+
+  async updateComment(id: number, data: any, type: string) {
+    const response = await fetch(
+      `${this.currentUrl}${this.prefix}/comment/update/${id}?vk_user_id=${this.userId}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    if (response.ok) {
+      return await response.json();
+    }
+  }
+
+  async deleteComment(id: number, data: any, type: string) {
+    const response = await fetch(
+      `${this.currentUrl}${this.prefix}/comment/delete/${id}?vk_user_id=${this.userId}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    if (response.ok) {
+      return await response.json();
+    }
+  }
+
+  async getDoctorsNote(noteId: number, isMedicRecord: boolean) {
+    const response = await fetch(
+      `${this.currentUrl}${this.prefix}/note/get/${isMedicRecord}/${noteId}?vk_user_id=${this.userId}`,
+      {
+        mode: 'cors',
+      }
+    );
+    if (response.ok) {
+      const noteMessages = await response.json();
+      return noteMessages.notelist;
+    }
+  }
+
+  async createDoctorNote(noteId: number, data: string, isMedicRecord: boolean) {
+    const response = await fetch(
+      `${this.currentUrl}${this.prefix}/note/create/${isMedicRecord}/${noteId}?vk_user_id=${this.userId}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ text: data }),
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    if (response.ok) {
+      return await response.json();
+    }
+  }
+
+  async getAudioText(id: number, type: string) {
+    const response = await fetch(
+      `${this.currentUrl}${this.prefix}/record/medic/get/diarisations/${id}?vk_user_id=${this.userId}`,
+      {
+        mode: 'cors',
+      }
+    );
+    const list = await response.json();
+    return list.diarisationlist;
+  }
+
+  async createDiarisation(data: FormData, recordId: number) {
+    const response = await fetch(
+      `${this.currentUrl}${this.prefix}/diarisation/${recordId}?vk_user_id=${this.userId}`,
+      {
+        mode: 'cors',
+        method: 'POST',
+        body: data,
+        // headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    const list = await response.json();
+    const listObject = {
+      DiarisationInfo: list.diarisationinfo,
+    };
+    return listObject;
+  }
+
+  async searchDiary(query: string) {
+    const response = await fetch(
+      `${this.currentUrl}${this.prefix}/search/diary?vk_user_id=${this.userId}&text=${query}`,
+      {
+        method: 'GET',
+        mode: 'cors',
+      }
+    );
+    const list = await response.json();
+    return list;
+  }
 
   setUserId(id: number) {
     this.userId = id;

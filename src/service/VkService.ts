@@ -5,18 +5,22 @@ class VkService {
     const user = await bridge.send('VKWebAppGetUserInfo');
     return user;
   }
-  async getImage(path: string) {
-    await bridge
-      .send('VKWebAppShowImages', {
-        images: [`https://park-hesh/images/${path}.png`],
-      })
-      .then((data) => {
-        if (data.result) {
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  chareLink(link: string) {
+    bridge.send('VKWebAppShare', {
+      link: link,
+    });
+  }
+
+  async notifyAccept() {
+    await bridge.send('VKWebAppAllowNotifications');
+  }
+
+  updateConfigWatcher(callback) {
+    bridge.subscribe(({ detail: { type, data } }) => {
+      if (type === 'VKWebAppUpdateConfig') {
+        callback(data.apperance);
+      }
+    });
   }
 }
 

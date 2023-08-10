@@ -12,19 +12,16 @@ import {
 import { Icon24MusicOutline } from '@vkontakte/icons';
 
 import styles from './AudioPicker.module.css';
-import { useAppDispatch, useAppSelector } from '../../../../store/store';
-import { addTemporaryNoteAudio } from '../../../../store/note/noteSlice';
+import BackendService from '../../../../service/BackendService';
+import { useAppSelector } from '../../../../store/store';
 
 interface AudioPickerProps {
-  onContinue: () => void;
+  onAdd: (list) => void;
 }
 
-const AudioPicker = ({ onContinue }: AudioPickerProps) => {
-  const initialState = useAppSelector((state) => state.note.temporaryNoteAudio);
-  const [audioFile, setAudio] = useState<File>(initialState);
-
-  const dispatch = useAppDispatch();
-
+const AudioPicker = ({ onAdd }: AudioPickerProps) => {
+  const [audioFile, setAudio] = useState<File>(null);
+  const activeNoteId = useAppSelector((state) => state.noteChat.activeNoteId);
   const handleAudioChange = (e: ChangeEvent) => {
     const audio = e.target as HTMLInputElement;
     if (!audio) {
@@ -34,14 +31,15 @@ const AudioPicker = ({ onContinue }: AudioPickerProps) => {
     if (files.length) {
       setAudio(files[0]);
     }
-    console.log('files', files);
   };
 
-  const handleContinueClick = () => {
-    dispatch(addTemporaryNoteAudio(audioFile));
-    onContinue();
+  const handleCreateAudio = async () => {
+    const formData = new FormData();
+    formData.append('audio', audioFile as unknown as File);
+    const list = await BackendService.createDiarisation(formData, activeNoteId);
+
+    onAdd(list);
   };
-  console.log('auido', audioFile.length);
   return (
     <SplitLayout className={styles.container}>
       <SplitCol width="100%">
@@ -60,14 +58,19 @@ const AudioPicker = ({ onContinue }: AudioPickerProps) => {
             Выбрать файл
           </File>
         </FormItem>
-        {audioFile.size !== undefined && (
+        {audioFile?.size !== undefined && (
           <Div style={{ display: 'flex', justifyContent: 'center' }}>
-            <audio controls src={URL.createObjectURL(audioFile)}></audio>
+            <audio controls src={URL.createObjectURL(audioFile!)}></audio>
           </Div>
         )}
         <Div>
-          <Button size="l" onClick={handleContinueClick} stretched>
-            Далее
+          <Button
+            size="l"
+            onClick={handleCreateAudio}
+            stretched
+            disabled={audioFile === null}
+          >
+            Отправить на расшифровку
           </Button>
         </Div>
       </SplitCol>

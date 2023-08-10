@@ -39,6 +39,6 @@
     justify-content: center;
 }
 
-.picked {
-    opacity: 0.7;
+.opacity {
+    opacity: 0.5;
 }

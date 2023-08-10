@@ -18,6 +18,7 @@ type Note = {
   temporaryNoteInfo: TemporaryNoteInfo;
   temporaryNotePhoto: TemporaryNotePhoto;
   temporaryNoteAudio: File;
+  diarisationsList: [];
 };
 
 const initialState: Note = {
@@ -28,12 +29,14 @@ const initialState: Note = {
     treatment: '',
     complaints: '',
     recommendations: '',
+    feelings: 1,
   },
   temporaryNotePhoto: {
     images: [],
     categories: [],
   },
   temporaryNoteAudio: {} as File,
+  diarisationsList: [],
 };
 
 const noteSlice = createSlice({
@@ -56,6 +59,7 @@ const noteSlice = createSlice({
         treatment: '',
         complaints: '',
         recommendations: '',
+        feelings: 1,
       };
     },
     removeAudio(state) {
@@ -67,6 +71,9 @@ const noteSlice = createSlice({
     addTemporaryNoteAudio(state, action: PayloadAction<File>) {
       state.temporaryNoteAudio = action.payload;
     },
+    setDiarisationsList(state, action) {
+      state.diarisationsList = action.payload ? action.payload : [];
+    },
   },
 });
 
@@ -76,7 +83,8 @@ export const {
   addTemporaryNotePhoto,
   removeTemporaryNoteInfo,
   addTemporaryNoteAudio,
-  removeAudio
+  removeAudio,
+  setDiarisationsList,
 } = noteSlice.actions;
 
 export default noteSlice.reducer;

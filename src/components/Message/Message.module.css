@@ -1,0 +1,23 @@
+.message {
+    padding: 14px 12px 14px 12px;
+    /* background: #f7f8fa; */
+    max-width: 70%;
+    /* border: 1px solid #dce1e6; */
+    border-radius: 8px;
+    overflow: auto;
+}
+
+.message:not(:last-child) {
+    margin-bottom: 10px;
+}
+
+.text {
+    /* color: #000000; */
+    font-size: 15px;
+    letter-spacing: -0.24px;
+}
+
+.time {
+    /* color: #000000; */
+    font-size: 16px;
+}

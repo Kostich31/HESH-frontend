@@ -8,20 +8,7 @@ import structure from "./router/structure";
 import store from "./store/store";
 import "@vkontakte/vkui/dist/vkui.css";
 
-// Init VK  Mini App
-bridge
-  .send("VKWebAppInit")
-  .then((data) => {
-    if (data.result) {
-      // Приложение инициализировано
-    } else {
-      // Ошибка
-    }
-  })
-  .catch((error) => {
-    // Ошибка
-    console.log(error);
-  });
+bridge.send("VKWebAppInit");
 const root = createRoot(document.getElementById("root")!);
 root.render(
   <Provider store={store}>

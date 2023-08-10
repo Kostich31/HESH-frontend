@@ -6,44 +6,47 @@ import { PanelTypes, ViewTypes } from '../router/structure';
 import BackendService from '../service/BackendService';
 import { useAppDispatch } from '../store/store';
 import { initUser } from '../store/user/userSlice';
+import VkService from '../service/VkService';
 
 const RegisterPatient = () => {
   const { toPanel, toView } = useRouterActions();
   const dispatch = useAppDispatch();
   const [inputValue, setInputValue] = useState<string>(
-    `https://vk.com/app51587334${BackendService.getInviteLink()}`
+    `${BackendService.getInviteLink()}`
   );
 
   const registerPatient = async () => {
+    const tokenArray = inputValue.match(/token=(\w+)/i);
+
+    const token = tokenArray?.length === 2 ? tokenArray[1] : '';
+    if (!token.trim()) {
+      return;
+    }
     const user = await BackendService.registerUser(
       BackendService.getName(),
       'patient',
-      Number(inputValue.replace(/[^0-9]/g, ''))
+      Number(
+        inputValue.match(/diaryid=(\d+)/g)?.toString().replace(/[^0-9]/g, '')
+      ),
+      token
     );
     const userInfo = user.userinfo;
     dispatch(
       initUser({ vkID: userInfo.id, role: Roles.PATIENT, name: userInfo.name })
     );
     BackendService.setRole(false);
-
+    VkService.notifyAccept();
     toView(ViewTypes.JOURNALS);
     toPanel(PanelTypes.JOURNALS);
   };
 
   return (
     <Div
-      style={{
-        flexDirection: 'column',
-        display: 'flex',
-      }}
+      style={{flexDirection: 'column',display: 'flex'}}
     >
       <FormItem width="100%" top="Приглашение от врача">
         <Input
-          value={inputValue}
-          placeholder="Ссылка-приглашение"
-          onChange={(event: ChangeEvent<HTMLInputElement>) =>
-            setInputValue(event.target.value)
-          }
+          value={inputValue} placeholder="Ссылка-приглашение" onChange={(event: ChangeEvent<HTMLInputElement>) => setInputValue(event.target.value) }
         ></Input>
       </FormItem>
       <FormItem width="100%">
@@ -64,3 +67,4 @@ const RegisterPatient = () => {
 };
 
 export default RegisterPatient;
+

@@ -11,11 +11,18 @@ import {
   ButtonGroup,
   Div,
   IconButton,
+  unstable_TextTooltip as TextTooltip,
+  Spinner,
+  usePlatform,
+  Text,
+  InfoRow,
+  MiniInfoCell,
 } from '@vkontakte/vkui';
 import {
   Icon20CancelCircleFillRed,
   Icon24Camera,
   Icon20WarningTriangleOutline,
+  Icon20CheckCircleFillGreen,
 } from '@vkontakte/icons';
 import styles from './PhotoPicker.module.css';
 import { useAppDispatch, useAppSelector } from '../../../../store/store';
@@ -26,10 +33,13 @@ import {
   removeTemporaryNoteInfo,
 } from '../../../../store/note/noteSlice';
 import BackendService from '../../../../service/BackendService';
+import bridge from '@vkontakte/vk-bridge';
 
-// interface PhotoPickerProps {
-//   onAddCategoryClick: () => void;
-// }
+enum TIP_TEXT {
+  LOADING = 'Происходит распознавание качества...',
+  SUCCESS = 'Фотография хорошего качества',
+  BAD = 'Фотография плохого качества',
+}
 
 const PhotoPicker = () => {
   const notePhoto = useAppSelector((state) => state.note.temporaryNotePhoto);
@@ -39,30 +49,40 @@ const PhotoPicker = () => {
     notePhoto.images as unknown as FileList
   );
   const [goodImages, setGoodImages] = useState<
-    { id: number; isGood: boolean }[]
+    { id: number; status: string }[]
   >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const audio = useAppSelector((state) => state.note.temporaryNoteAudio);
-  const { toPanel } = useRouterActions();
+  const { toPanel, resetHistory } = useRouterActions();
   const journalId = useAppSelector((state) => state.journal.id);
+
   const handleImageChange = (e: ChangeEvent) => {
     const imagesFromUser = e.target as HTMLInputElement;
     if (!imagesFromUser) {
       return;
     }
-    const files = imagesFromUser.files as FileList;
-    if (files.length) {
+    const files = structuredClone(imagesFromUser.files) as FileList;
+    if (files.length <= 10) {
       const oldImages = Array.from(images);
       const newImages = oldImages.concat(
         Array.from(files)
       ) as unknown as FileList;
       setImages(newImages);
-      setGoodImages(() => {
-        return Array.from(newImages).map((_, index) => ({
-          id: index,
-          isGood: true,
-        }));
+      setGoodImages((oldArray) => {
+        return [
+          ...oldArray,
+          ...Array.from(files).map((_, index) => ({
+            id: oldArray.length + index,
+            status: 'loading',
+          })),
+        ];
       });
+
+      checkQuality(
+        Array.from(files).map((elem, index) => {
+          return { id: index + oldImages.length, image: elem };
+        })
+      );
     }
   };
 
@@ -80,6 +100,7 @@ const PhotoPicker = () => {
       formData.append('recommendations', note.recommendations);
     } else {
       formData.append('complaints', note.complaints);
+      formData.append('feelings', String(note.feelings));
     }
 
     Array.from(images).forEach(async (image) => {
@@ -99,6 +120,7 @@ const PhotoPicker = () => {
     dispatch(removeAudio());
     setIsLoading(false);
     toPanel(PanelTypes.JOURNAL_SINGLE);
+    resetHistory();
   };
   const removeImage = (id: number) => {
     setImages(
@@ -107,50 +129,83 @@ const PhotoPicker = () => {
           (_, index) => index !== id
         ) as unknown as FileList
     );
+    setGoodImages((images) =>
+      Array.from(images).filter((_, index) => index !== id)
+    );
   };
 
-  const checkQuality = () => {
+  const checkQuality = async (images: Array<{ id: number; image: File }>) => {
     const formData = new FormData();
-    const qualityArray = [];
-
-    Array.from(images).map(async (image, index) => {
-      formData.set(`image`, image);
+    Array.from(images).map(async (elem) => {
+      formData.set(`image`, elem.image);
       const quality = await BackendService.checkQuality(formData);
-      qualityArray.push({ id: index, isGood: quality.assesment });
-      const updatedList = goodImages.map((item) => {
-        if (item.id === index && quality.assesment === false) {
-          return { ...item, isGood: quality.assesment };
-        }
-        return item;
-      });
-      setGoodImages(updatedList);
+      const status = quality.assesment ? 'success' : 'failed';
+      setGoodImages((oldArray) =>
+        oldArray.map((item) => {
+          if (item.id === elem.id) {
+            return { ...item, status };
+          }
+          return item;
+        })
+      );
     });
   };
 
   const ImageContent = useCallback(() => {
     if (images.length) {
       const list = Array.from(images).map((image, index) => {
+        const status = goodImages[index].status;
+        const tooltipText =
+          status === 'loading'
+            ? TIP_TEXT.LOADING
+            : status === 'success'
+            ? TIP_TEXT.SUCCESS
+            : TIP_TEXT.BAD;
         return (
           // eslint-disable-next-line jsx-a11y/label-has-associated-control
-          <label key={`URL.createObjectURL(image)${index}`}>
-            {goodImages.length > 0 && goodImages[index].isGood === false && (
-              <Icon20WarningTriangleOutline
-                fill={'red'}
-                width={24}
-                height={24}
-                style={{
-                  position: 'absolute',
-                  zIndex: 1,
-                  marginTop: '-2%',
-                }}
-              ></Icon20WarningTriangleOutline>
+          <label key={image.size}>
+            {goodImages.length > 0 && (
+              <TextTooltip text={tooltipText}>
+                {status === 'loading' ? (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      zIndex: 1,
+                      marginTop: '-5px',
+                    }}
+                  >
+                    <Spinner></Spinner>
+                  </div>
+                ) : status === 'success' ? (
+                  <Icon20CheckCircleFillGreen
+                    width={24}
+                    height={24}
+                    style={{
+                      position: 'absolute',
+                      zIndex: 1,
+                      marginTop: '-5px',
+                    }}
+                  ></Icon20CheckCircleFillGreen>
+                ) : (
+                  <Icon20WarningTriangleOutline
+                    fill={'red'}
+                    width={24}
+                    height={24}
+                    style={{
+                      position: 'absolute',
+                      zIndex: 1,
+                      marginTop: '-5px',
+                    }}
+                  ></Icon20WarningTriangleOutline>
+                )}
+              </TextTooltip>
             )}
             <IconButton
               style={{
                 position: 'absolute',
                 zIndex: 1,
-                marginLeft: '15%',
-                marginTop: '-2%',
+                marginLeft: '92px',
+                marginTop: '-17px',
               }}
               onClick={(event) => {
                 if ((event.target as HTMLElement).tagName === 'use') {
@@ -162,7 +217,9 @@ const PhotoPicker = () => {
             </IconButton>
             <Image
               size={128}
-              className={classNames(styles.image)}
+              className={classNames(styles.image, {
+                [styles.opacity]: status === 'loading',
+              })}
               src={URL.createObjectURL(image)}
               alt="uploaded"
             ></Image>
@@ -206,50 +263,24 @@ const PhotoPicker = () => {
           </File>
         </FormItem>
         <ImageContent />
-
-        {/* {Boolean(activeImages.length) ? (
-          <ButtonGroup
-            style={{
-              justifyContent: 'center',
-              marginTop: '16px',
-              marginBottom: '8px',
-            }}
-            mode="horizontal"
-            // gap="m"
-            stretched
-          >
-            <Button
-              mode="tertiary"
-              style={{ color: '#808080' }}
-              before={
-                <Icon24DeleteOutline fill="#808080"></Icon24DeleteOutline>
-              }
-              disabled
-            >
-              Удалить
-            </Button>
-            <Button
-              disabled
-              style={{ color: '#808080' }}
-              mode="tertiary"
-              before={<Icon24Tag fill="#808080"></Icon24Tag>}
-              // onClick={() => setIsClicked(true)}
-            >
-              Добавить категорию
-            </Button>
-          </ButtonGroup>
-        ) : ( */}
         <Div>
+          <InfoRow
+            header=""
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: '15px',
+              marginBottom: '15px',
+            }}
+          >
+            {goodImages.find((elem) => elem.status === 'loading')
+              ? 'Проверка качества фото...'
+              : goodImages.find((elem) => elem.status === 'failed')
+              ? 'Есть фото плохого качества'
+              : ''}
+          </InfoRow>
           <ButtonGroup stretched mode="vertical">
-            <Button
-              loading={isLoading}
-              size="m"
-              stretched
-              mode="secondary"
-              onClick={checkQuality}
-            >
-              Проверить качество фотографий
-            </Button>
             <Button
               loading={isLoading}
               size="m"
@@ -260,38 +291,6 @@ const PhotoPicker = () => {
             </Button>
           </ButtonGroup>
         </Div>
-        {/* )} */}
-        {/* {isClicked && (
-          <>
-            <FormItem top="Список">
-              <ChipsInput
-                placeholder="Введите название и нажмите Enter"
-                onChange={setCategoriesInputValue}
-                value={categoriesInputValue}
-              />
-            </FormItem>
-            <ButtonGroup mode="horizontal" gap="m" stretched>
-              <Button
-                before={<Icon24Add></Icon24Add>}
-                onClick={() => {
-                  setCategoriesInputValue([]);
-                  setIsClicked(false);
-                }}
-              >
-                Отмена
-              </Button>
-              <Button
-                before={<Icon24Add></Icon24Add>}
-                onClick={() => {
-                  handleCreateNote();
-                  console.log(categoriesInputValue);
-                }}
-              >
-                Сохранить
-              </Button>
-            </ButtonGroup>
-          </>
-        )} */}
       </SplitCol>
     </SplitLayout>
   );

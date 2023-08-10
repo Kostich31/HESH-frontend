@@ -3,15 +3,11 @@ import {
   AdaptivityProvider,
   AppRoot,
   ConfigProvider,
-  Epic,
   Panel,
   PanelHeader,
   PanelHeaderBack,
-  Tabbar,
-  TabbarItem,
   View,
 } from '@vkontakte/vkui';
-import { Icon28BookOutline } from '@vkontakte/icons';
 import {
   useRouterSelector,
   useRouterActions,
@@ -33,12 +29,18 @@ import { NoteAudioText } from './panels/NoteAudioText';
 import RegisterPatient from './panels/RegisterPatient';
 import { useAuth } from './service/hooks/useAuth';
 import BackendService from './service/BackendService';
+import DoctorNotes from './panels/DoctorNotes';
+import AcceptInvitePanel from './panels/AcceptInvitePanel';
+import { JournalChat } from './panels/JournalChat';
 export default function App() {
   const { toView, toBack, toPanel } = useRouterActions();
   const [loading, setLoading] = useState(true);
   if (window.location.hash.includes('link')) {
-    BackendService.setInviteLink(`${window.location.hash}`);
+    BackendService.setInviteLink(
+      `https://vk.com/app51587334${window.location.hash}`
+    );
   }
+
   useAuth({ setLoading });
   const { activePanel, activeView } = useRouterSelector();
   const go = (route: string) => {
@@ -50,123 +52,125 @@ export default function App() {
   }
 
   return (
-    <ConfigProvider appearance="light">
+    <ConfigProvider>
       <AdaptivityProvider>
         <AppRoot>
-          <Epic
+          <View
+            id={ViewTypes.JOURNALS}
+            activePanel={activePanel}
             hidden={activeView === ViewTypes.REGISTER}
-            activeStory={activeView}
-            tabbar={
-              <Tabbar>
-                <TabbarItem
-                  onClick={() => toView(ViewTypes.JOURNALS)}
-                  selected={activeView === ViewTypes.JOURNALS}
-                  text="Дневники"
-                >
-                  <Icon28BookOutline />
-                </TabbarItem>
-              </Tabbar>
-            }
           >
-            <View id={ViewTypes.JOURNALS} activePanel={activePanel}>
-              <Panel id={PanelTypes.JOURNALS}>
-                <PanelHeader>Дневники</PanelHeader>
-                <Journals></Journals>
-              </Panel>
-              <Panel id={PanelTypes.JOURNAL_SINGLE}>
-                <PanelHeader
-                  before={
-                    <PanelHeaderBack
-                      onClick={() => toPanel(PanelTypes.JOURNALS)}
-                    ></PanelHeaderBack>
-                  }
-                >
-                  Дневник
-                </PanelHeader>
-                <JournalSingle></JournalSingle>
-              </Panel>
-              <Panel id={PanelTypes.JOURNAL_CREATE}>
-                <PanelHeader
-                  before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
-                >
-                  Создание дневника
-                </PanelHeader>
-                <JournalCreate />
-              </Panel>
-              <Panel id={PanelTypes.JOURNAL_EDIT}>
-                <PanelHeader
-                  before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
-                >
-                  Редактировать
-                </PanelHeader>
-                <JournalEdit />
-              </Panel>
-              <Panel id={PanelTypes.JOURNAL_SINGLE_DETAILED}>
-                <PanelHeader
-                  before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
-                >
-                  Подробнее
-                </PanelHeader>
-                <JournalDetailed />
-              </Panel>
-              <Panel id={PanelTypes.NOTE_SINGLE}>
-                <PanelHeader
-                  before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
-                >
-                  Запись
-                </PanelHeader>
-                <NoteSingle />
-              </Panel>
-              <Panel id={PanelTypes.NOTE_EDIT}>
-                <PanelHeader
-                  before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
-                >
-                  Редактирование записи
-                </PanelHeader>
-                <NoteEdit />
-              </Panel>
-              <Panel id={PanelTypes.NOTE_CREATE_INFO}>
-                <PanelHeader
-                  before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
-                >
-                  Создание записи
-                </PanelHeader>
-                <NoteCreateInfo />
-              </Panel>
-              <Panel id={PanelTypes.NOTE_CREATE_PHOTO}>
-                <PanelHeader
-                  before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
-                >
-                  Добавление фото
-                </PanelHeader>
-                <NoteCreatePhoto />
-              </Panel>
-              <Panel id={PanelTypes.NOTE_EDIT_PHOTO}>
-                <PanelHeader
-                  before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
-                >
-                  Редактирование фотографий
-                </PanelHeader>
-                <NoteEditPhoto />
-              </Panel>
-              <Panel id={PanelTypes.NOTE_CREATE_AUDIO}>
-                <PanelHeader
-                  before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
-                >
-                  Добавление аудио
-                </PanelHeader>
-                <NoteCreateAudio />
-              </Panel>
-              <Panel id={PanelTypes.NOTE_AUDIO_TEXT}>
-                <PanelHeader
-                  before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
-                >
-                  Расшифрованный текст
-                </PanelHeader>
-                <NoteAudioText />
-              </Panel>
-            </View>
-          </Epic>
+            <Panel id={PanelTypes.JOURNALS}>
+              <PanelHeader>Дневники</PanelHeader>
+              <Journals></Journals>
+            </Panel>
+            <Panel id={PanelTypes.JOURNAL_SINGLE}>
+              <PanelHeader
+                before={
+                  <PanelHeaderBack
+                    onClick={() => toPanel(PanelTypes.JOURNALS)}
+                  ></PanelHeaderBack>
+                }
+              >
+                Дневник
+              </PanelHeader>
+              <JournalSingle></JournalSingle>
+            </Panel>
+            <Panel id={PanelTypes.JOURNAL_CREATE}>
+              <PanelHeader
+                before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
+              >
+                Создание дневника
+              </PanelHeader>
+              <JournalCreate />
+            </Panel>
+            <Panel id={PanelTypes.JOURNAL_EDIT}>
+              <PanelHeader
+                before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
+              >
+                Редактировать
+              </PanelHeader>
+              <JournalEdit />
+            </Panel>
+            <Panel id={PanelTypes.JOURNAL_SINGLE_DETAILED}>
+              <PanelHeader
+                before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
+              >
+                Подробнее
+              </PanelHeader>
+              <JournalDetailed />
+            </Panel>
+            <Panel id={PanelTypes.NOTE_SINGLE}>
+              <PanelHeader
+                before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
+              >
+                Запись
+              </PanelHeader>
+              <NoteSingle />
+            </Panel>
+            <Panel id={PanelTypes.NOTE_EDIT}>
+              <PanelHeader
+                before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
+              >
+                Редактирование записи
+              </PanelHeader>
+              <NoteEdit />
+            </Panel>
+            <Panel id={PanelTypes.NOTE_CREATE_INFO}>
+              <NoteCreateInfo />
+            </Panel>
+            <Panel id={PanelTypes.NOTE_CREATE_PHOTO}>
+              <PanelHeader
+                before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
+              >
+                Добавление фото
+              </PanelHeader>
+              <NoteCreatePhoto />
+            </Panel>
+            <Panel id={PanelTypes.NOTE_EDIT_PHOTO}>
+              <PanelHeader
+                before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
+              >
+                Редактирование фотографий
+              </PanelHeader>
+              <NoteEditPhoto />
+            </Panel>
+            <Panel id={PanelTypes.NOTE_CREATE_AUDIO}>
+              <PanelHeader
+                before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
+              >
+                Добавление аудио
+              </PanelHeader>
+              <NoteCreateAudio />
+            </Panel>
+            <Panel id={PanelTypes.NOTE_AUDIO_TEXT}>
+              <PanelHeader
+                before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
+              >
+                Расшифрованный текст
+              </PanelHeader>
+              <NoteAudioText />
+            </Panel>
+            <Panel id={PanelTypes.DOCTOR_NOTE_CHAT} style={{ height: '100%' }}>
+              <PanelHeader
+                before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
+              >
+                Памятки
+              </PanelHeader>
+              <DoctorNotes />
+            </Panel>
+            <Panel
+              id={PanelTypes.DOCTOR_WITH_PATIENT_CHAT}
+              style={{ height: '100%' }}
+            >
+              <PanelHeader
+                before={<PanelHeaderBack onClick={toBack}></PanelHeaderBack>}
+              >
+                Чат
+              </PanelHeader>
+              <JournalChat />
+            </Panel>
+          </View>
           <View
             hidden={activeView === ViewTypes.JOURNALS}
             id={ViewTypes.REGISTER}
@@ -182,6 +186,9 @@ export default function App() {
                 Регистрация
               </PanelHeader>
               <RegisterPatient />
+            </Panel>
+            <Panel id={PanelTypes.ACCEPT_INVITE_LINK}>
+              <AcceptInvitePanel />
             </Panel>
           </View>
         </AppRoot>

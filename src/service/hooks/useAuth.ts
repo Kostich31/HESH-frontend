@@ -1,6 +1,4 @@
-import {
-  useRouterActions,
-} from 'react-router-vkminiapps-updated';
+import { useRouterActions } from 'react-router-vkminiapps-updated';
 import { ViewTypes, PanelTypes } from './../../router/structure';
 import { useAppDispatch } from './../../store/store';
 import { useState, useLayoutEffect } from 'react';
@@ -17,17 +15,16 @@ export const useAuth = ({ setLoading }) => {
   useLayoutEffect(() => {
     const authUser = async () => {
       const user = await VkService.getUserInfo();
-      console.log('[vk user]', user);
       const userVKInfo = {
-        id: user.id,
+        id: user.id, //3,
         name: `${user.last_name} ${user.first_name}`,
       };
       BackendService.setUserId(userVKInfo.id);
       BackendService.setName(userVKInfo.name);
       const userInfo = await BackendService.initUser();
+      toView(ViewTypes.REGISTER);
       if (userInfo.name === '') {
-        setNeedRegister(true);
-        toView(ViewTypes.REGISTER);
+        // setNeedRegister(true);
         if (BackendService.getInviteLink() !== '') {
           toPanel(PanelTypes.REGISTER_PATIENT);
         } else {
@@ -35,6 +32,7 @@ export const useAuth = ({ setLoading }) => {
         }
       } else {
         BackendService.setRole(userInfo.ismedic);
+
         dispatch(
           initUser({
             vkID: userVKInfo.id,
@@ -42,9 +40,14 @@ export const useAuth = ({ setLoading }) => {
             name: userVKInfo.name,
           })
         );
-        setNeedRegister(false);
-        toView(ViewTypes.JOURNALS);
-        toPanel(PanelTypes.JOURNALS);
+
+        // setNeedRegister(false);
+        if (BackendService.getInviteLink() !== '' && !userInfo.ismedic) {
+          toPanel(PanelTypes.ACCEPT_INVITE_LINK);
+        } else {
+          toView(ViewTypes.JOURNALS);
+          toPanel(PanelTypes.JOURNALS);
+        }
       }
       setLoading(false);
     };

@@ -1,4 +1,4 @@
-import { Button, Div, Text } from '@vkontakte/vkui';
+import { Button, Div, Text, Image } from '@vkontakte/vkui';
 import React from 'react';
 import { useRouterActions } from 'react-router-vkminiapps-updated';
 import { Roles } from '../interfaces/types';
@@ -39,6 +39,9 @@ const Register = ({ onRegister }: RegisterProps) => {
         height: '100%',
       }}
     >
+      <div style={{ marginBottom: '50px' }}>
+        <Image src={'logo/logo.png'} size={128}></Image>
+      </div>
       <Text>
         Приложение поможет врачам следить за историей заболевания пациента и
         оказать наилучшую помощь

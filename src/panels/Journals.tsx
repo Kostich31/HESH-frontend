@@ -1,16 +1,24 @@
 import { Icon16Done, Icon28AddCircleOutline } from '@vkontakte/icons';
-import { IconButton, Spinner, Avatar, Snackbar, Search } from '@vkontakte/vkui';
-import React, { ReactNode, useEffect, useState } from 'react';
+import {
+  IconButton,
+  Spinner,
+  Avatar,
+  Snackbar,
+  Search,
+  FixedLayout,
+  SplitLayout,
+  SplitCol,
+} from '@vkontakte/vkui';
+import React, { ReactNode } from 'react';
 import { useRouterActions } from 'react-router-vkminiapps-updated';
 import JournalsList from '../components/JournalsList/JournalsList';
-import { DiariesResponse } from '../interfaces/types';
 import { PanelTypes } from '../router/structure';
 import BackendService from '../service/BackendService';
-import { addJournals } from '../store/journal/journalSlice';
-import { useAppDispatch, useAppSelector } from '../store/store';
+import VkService from '../service/VkService';
+import { Delimiter } from '../components/Delimiter/Delimiter';
+import { useJournalListState } from '../components/JournalsList/hooks/useJournalListState';
 
 export default function Journals() {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [snackbar, setSnackbar] = React.useState<ReactNode>(null);
   const openLinkSnackBar = () => {
     if (snackbar) return;
@@ -18,6 +26,10 @@ export default function Journals() {
       <Snackbar
         onClick={() => setSnackbar(null)}
         onClose={() => setSnackbar(null)}
+        onActionClick={() => {
+          VkService.chareLink(BackendService.getInviteLink());
+        }}
+        action="Поделиться"
         before={
           <Avatar
             size={24}
@@ -31,41 +43,52 @@ export default function Journals() {
       </Snackbar>
     );
   };
-  const dispatch = useAppDispatch();
   const { toPanel } = useRouterActions();
-  console.log(useAppSelector((state) => state.user.role));
   const isMedic = BackendService.getRole();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const data: DiariesResponse = await BackendService.getAllDiary();
-      dispatch(addJournals(data.diarylist));
-      setIsLoading(false);
-    };
-    fetchData();
-  }, []);
+  const {notCompletedList,completedList,onSearchChange,isLoading,searchValue,setList,
+  } = useJournalListState();
 
   return (
-    <>
-      {isLoading && <Spinner size="large" />}
-      <Search disabled></Search>
-      <JournalsList onLinkClick={openLinkSnackBar}></JournalsList>
-      {isMedic && (
-        <IconButton
-          onClick={() => toPanel(PanelTypes.JOURNAL_CREATE)}
-          style={{
-            position: 'sticky',
-            display: 'flex',
-            bottom: '60px',
-            marginTop: '610px',
-            marginRight: '10px',
-            justifyContent: 'end',
-          }}
-        >
-          <Icon28AddCircleOutline fill="#2688EB" width={48} height={48} />
-        </IconButton>
-      )}
-      {snackbar}
-    </>
+    <SplitLayout>
+      <SplitCol width="100%">
+        {isLoading && <Spinner size="large" />}
+        <Search
+          onChange={(e) => onSearchChange(e.target.value)}
+          value={searchValue}
+        ></Search>
+        <JournalsList
+          onListUpdate={setList}
+          diaryList={notCompletedList}
+          onLinkClick={openLinkSnackBar}
+        ></JournalsList>
+        {(notCompletedList.length !== 0 || completedList.length !== 0) && (
+          <Delimiter text="Завершенные дневники" />
+        )}
+        <JournalsList
+          onListUpdate={setList}
+          diaryList={completedList}
+          onLinkClick={openLinkSnackBar}
+          isComplete
+        ></JournalsList>
+        {isMedic && notCompletedList.length !== 0 && (
+          <FixedLayout
+            vertical="bottom"
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <IconButton
+              style={{ marginBottom: '10px', marginRight: '10px' }}
+              onClick={() => toPanel(PanelTypes.JOURNAL_CREATE)}
+            >
+              <Icon28AddCircleOutline fill={'#2688EB'} width={48} height={48} />
+            </IconButton>
+          </FixedLayout>
+        )}
+        {snackbar}
+      </SplitCol>
+    </SplitLayout>
   );
 }

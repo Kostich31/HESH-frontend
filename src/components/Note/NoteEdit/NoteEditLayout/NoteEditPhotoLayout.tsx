@@ -19,7 +19,7 @@ import styles from './NoteEditLayoutPhoto.module.css';
 interface NoteEditPhotoLayout {
   onConfirmChange: (id: number, imagesData: any) => void;
   onCancelChange: () => void;
-  imagesData: FileList;
+  imagesData: File[];
 }
 
 const NoteEditPhotoLayout = ({
@@ -27,18 +27,15 @@ const NoteEditPhotoLayout = ({
   onConfirmChange,
   imagesData,
 }: NoteEditPhotoLayout) => {
-  console.log(imagesData);
-  console.log(imagesData.length);
-
-  const [images, setImages] = useState<FileList>(imagesData);
-  console.log(typeof images);
+  const [images, setImages] = useState<File[]>(imagesData);
   const ImageContent = useCallback(() => {
-    if (images.length > 0) {
-      console.log('>0', images);
-      const list = Array.from(images).map((image, index) => {
+    images.map((elem) => {
+    });
+    if (images.length !== 0) {
+      const list = images.map((image, index) => {
         return (
           // eslint-disable-next-line jsx-a11y/label-has-associated-control
-          <label key={`URL.createObjectURL(image)${index}`}>
+          <label key={index}>
             <IconButton
               style={{
                 position: 'absolute',
@@ -73,10 +70,6 @@ const NoteEditPhotoLayout = ({
         </CardGrid>
       );
     } else {
-      console.log('< 0', Object.keys(images));
-      // console.log('< 0', images.keys());
-      console.log('< 0', Array.from(images));
-
       return (
         <Div className={styles.imageContainer}>
           <Image size={128}></Image>

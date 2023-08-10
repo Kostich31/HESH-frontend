@@ -26,19 +26,23 @@ const NoteEditPhoto = () => {
     const files: File[] = [];
     imagePath.forEach(async (image) => {
       const response = await fetch(
-        `https://park-hesh.ru/images/${image.imagename}`
+        `https://park-hesh.ru/images/${image.imagename}`,
+        { headers: { 'Content-Type': 'image/png' } }
       );
       const blob = await response.blob();
-      const file = new File([blob], `${image.imagename}`, { type: blob.type });
+      const file = new File([blob], `${image.imagename}`, {
+        type: 'image/png',
+      });
       files.push(file);
     });
-    return files as unknown as FileList;
+    return files as unknown as File[];
   };
+  const imagesList = urlToObject();
   return (
     <NoteEditPhotoLayout
       onCancelChange={onCancelClick}
       onConfirmChange={onConfirmClick}
-      imagesData={urlToObject()}
+      imagesData={imagesList}
     ></NoteEditPhotoLayout>
   );
 };

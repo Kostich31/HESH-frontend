@@ -1,0 +1,17 @@
+.delimiter {
+    display: flex;
+    flex-basis: 100%;
+    align-items: center;
+    color: var(--vkui--calendar_color_text_date_secondary);
+    margin: 4px 8px;
+    composes: vkui--font_headline2--compact from global;
+}
+
+.delimiter:before,
+.delimiter:after {
+    content: "";
+    flex-grow: 1;
+    background-color: var(--vkui--color_separator_primary);
+    height: 1px;
+    margin: 0 16px;
+}

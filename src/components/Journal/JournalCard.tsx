@@ -1,37 +1,47 @@
-import { Card, Title, Text, Link } from '@vkontakte/vkui';
+import { Card, Title, Text, Link, classNames } from '@vkontakte/vkui';
 import { Icon24ChainOutline } from '@vkontakte/icons';
 import styles from './JournalCard.module.css';
 import React from 'react';
 import { useAppDispatch } from '../../store/store';
-import { DiaryResponse } from '../../interfaces/types';
+import { Diary, DiaryResponse } from '../../interfaces/types';
 import { useRouterActions } from 'react-router-vkminiapps-updated';
 import {
   addJournalId,
   addJournalInfo,
-  removeJournal,
+  setJournalComplete,
 } from '../../store/journal/journalSlice';
 import { PanelTypes } from '../../router/structure';
 import BackendService from '../../service/BackendService';
 import { DropdownJournal } from '../Dropdown/DropdownJournal';
-
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { setActiveDiaryId, setMessagesList } from '../../store/chat/chatSlice';
+import { decodeHTMLEntities } from '../../helpers/decodeHTMLEntities';
 interface JournalCardsProps {
   id: number;
+  linktoken: string;
   title: string;
   objectively: string;
   creatingDate: string;
   name: string;
+  isComplete: boolean;
   onJournalClick: (id: number) => void;
-  onLinkClick: (id: number) => void;
+  onLinkClick: () => void;
+  onListUpdate: (list: Diary[]) => void;
+  confirmBoxCallback: (isDelete: boolean, journalId) => void;
 }
 
 const JournalCard = ({
   id,
+  linktoken,
   title,
   objectively,
   name,
   creatingDate,
+  isComplete,
   onJournalClick,
   onLinkClick,
+  onListUpdate,
+  confirmBoxCallback,
 }: JournalCardsProps) => {
   const { toPanel } = useRouterActions();
   const dispatch = useAppDispatch();
@@ -44,64 +54,91 @@ const JournalCard = ({
   };
 
   const onDeleteClick = async () => {
-    await BackendService.deleteDiary(id);
-    dispatch(removeJournal(id));
+    confirmBoxCallback(true, id);
   };
 
-  const onChatClick = () => {};
+  const onChatClick = async () => {
+    dispatch(setActiveDiaryId({ id }));
+    const data = await BackendService.getComment(id);
+    dispatch(setMessagesList(data.CommentList ? data.CommentList : []));
+    toPanel(PanelTypes.DOCTOR_WITH_PATIENT_CHAT);
+  };
 
   const onMoreClick = () => {
     toPanel(PanelTypes.JOURNAL_SINGLE_DETAILED);
   };
 
-  const onCompleteClick = () => {};
+  const onCompleteClick = async () => {
+    confirmBoxCallback(false, id);
+  };
 
+  const journalCardClickHandler = () => {
+    dispatch(setJournalComplete(isComplete));
+    onJournalClick(id);
+  };
   return (
     <Card
       className={styles.card}
       mode="outline"
-      onClick={() => onJournalClick(id)}
+      onClick={journalCardClickHandler}
     >
-      <div className={styles.firstRowContainer}>
-        <div style={{ overflow: 'hidden', height: '24px' }}>
+      <div
+        className={classNames(styles.firstRowContainer, {
+          [styles.completed]: isComplete,
+        })}
+      >
+        <div id="journalCard" style={{ overflow: 'hidden', height: '24px' }}>
           <Title className={styles.title} level="2">
-            {title}
+            {decodeHTMLEntities(title)}
           </Title>
         </div>
         <div className={styles.rightBlockContainer}>
           <Text weight="3" size={16} className={styles.date}>
             {new Date(creatingDate).toLocaleDateString()}
           </Text>
-          <DropdownJournal
-            isMedic={isMedic}
-            onEditClick={onEditClick}
-            onDeleteClick={onDeleteClick}
-            onChatClick={onChatClick}
-            onMoreClick={onMoreClick}
-            onCompleteClick={onCompleteClick}
-          ></DropdownJournal>
+          {!isComplete && isMedic && (
+            <DropdownJournal
+              isMedic={isMedic}
+              onEditClick={onEditClick}
+              onDeleteClick={onDeleteClick}
+              onChatClick={onChatClick}
+              onMoreClick={onMoreClick}
+              onCompleteClick={onCompleteClick}
+            ></DropdownJournal>
+          )}
         </div>
       </div>
       <div className={styles.member}>
         {name ? (
-          <Text style={{ fontSize: '20px' }}>{name}</Text>
+          <Text weight="3" style={{ fontSize: '20px' }}>
+            {decodeHTMLEntities(name)}
+          </Text>
         ) : (
-          <Link
-            style={{ fontSize: '20px' }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onLinkClick(id);
-            }}
-            target="_blank"
+          <CopyToClipboard
+            text={`https://vk.com/app51587334#link?diaryid=${id}&token=${linktoken}`}
+            onCopy={() =>
+              BackendService.setInviteLink(
+                `https://vk.com/app51587334#link?diaryid=${id}&token=${linktoken}`
+              )
+            }
           >
-            Приглашение для пациента{' '}
-            <Icon24ChainOutline width={20} height={20} />
-          </Link>
+            <Link
+              onClick={(e) => {
+                e.stopPropagation();
+                onLinkClick();
+              }}
+              style={{ fontSize: '20px' }}
+              target="_blank"
+            >
+              Приглашение для пациента{' '}
+              <Icon24ChainOutline width={20} height={20} />
+            </Link>
+          </CopyToClipboard>
         )}
       </div>
       {objectively && (
         <Text weight="2" className={styles.description}>
-          Объективно: {objectively}
+          Объективно: {decodeHTMLEntities(objectively)}
         </Text>
       )}
     </Card>

@@ -4,7 +4,10 @@ import JournalCreateLayout from '../components/JournalCreateLayout/JournalCreate
 import { DiaryBasicInfo, DiaryCreateResponse } from '../interfaces/types';
 import { PanelTypes } from '../router/structure';
 import BackendService from '../service/BackendService';
-import { addJournalId } from '../store/journal/journalSlice';
+import {
+  addJournalId,
+  setJournalComplete,
+} from '../store/journal/journalSlice';
 import { useAppDispatch } from '../store/store';
 
 const JournalCreate = () => {
@@ -16,6 +19,7 @@ const JournalCreate = () => {
       createState
     );
     dispatch(addJournalId(journal.id));
+    dispatch(setJournalComplete(false));
     toPanel(PanelTypes.JOURNAL_SINGLE);
   }
 

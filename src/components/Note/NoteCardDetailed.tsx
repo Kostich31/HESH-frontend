@@ -1,41 +1,78 @@
 import React from 'react';
-import { Group, InfoRow, SimpleCell, Header } from '@vkontakte/vkui';
+import {
+  Group,
+  InfoRow,
+  SimpleCell,
+  Header,
+  Title,
+  usePlatform,
+  Platform,
+} from '@vkontakte/vkui';
 import { useAppSelector } from '../../store/store';
 import BackendService from '../../service/BackendService';
+import { decodeHTMLEntities } from '../../helpers/decodeHTMLEntities';
 
-const NoteCardDetailed = () => {
+const NoteCardDetailed = ({ Dropdown }) => {
   const note = useAppSelector((state) => state.note.note);
+  const isMedicRecord = note.basicinfo.complaints !== undefined ? false : true;
+  
   const isMedic = BackendService.getRole();
-  console.log('note', note);
+  const platform = usePlatform();
   return (
     <>
       <Group>
-        <Header
-          style={{ display: 'flex', justifyContent: 'center' }}
-          mode="secondary"
+        <div
+          style={{
+            alignItems: 'center',
+            display: 'flex',
+            justifyContent: 'space-between',
+            paddingLeft: platform === Platform.VKCOM ? '12px' : '16px',
+          }}
         >
-          Информация о записи
-        </Header>
+          <Title level="3">Информация о записи</Title>
+          {Dropdown}
+        </div>
         <SimpleCell multiline>
-          <InfoRow header="Название">{note.basicinfo.title}</InfoRow>
+          <InfoRow header="Название">
+            {decodeHTMLEntities(note.basicinfo.title)}
+          </InfoRow>
         </SimpleCell>
         <SimpleCell multiline>
-          <InfoRow header="Лечение">{note.basicinfo.treatment}</InfoRow>
+          <InfoRow header="Лечение">
+            {note.basicinfo.treatment
+              ? decodeHTMLEntities(note.basicinfo.treatment)
+              : 'Не заполнено'}
+          </InfoRow>
         </SimpleCell>
-        {!isMedic ? (
+        {!isMedicRecord ? (
           <SimpleCell multiline>
-            <InfoRow header="Жалобы">{note.basicinfo.complaints}</InfoRow>
+            <InfoRow header="Жалобы">
+              {note.basicinfo.complaints
+                ? decodeHTMLEntities(note.basicinfo.complaints)
+                : 'Не заполнено'}
+            </InfoRow>
           </SimpleCell>
         ) : (
           <SimpleCell multiline>
             <InfoRow header="Рекомендации">
-              {note.basicinfo.recommendations}
+              {note.basicinfo.recommendations
+                ? decodeHTMLEntities(note.basicinfo.recommendations)
+                : 'Не заполнено'}
             </InfoRow>
           </SimpleCell>
         )}
         <SimpleCell multiline>
-          <InfoRow header="Детали">{note.basicinfo.details}</InfoRow>
+          <InfoRow header="Детали">
+            {note.basicinfo.details
+              ? decodeHTMLEntities(note.basicinfo.details)
+              : 'Не заполнено'}
+          </InfoRow>
         </SimpleCell>
+        {note.basicinfo.feelings && (
+          <SimpleCell>
+            <InfoRow header="Самочувствие">{note.basicinfo.feelings}</InfoRow>
+          </SimpleCell>
+        )}
       </Group>
     </>
   );

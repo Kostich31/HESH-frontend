@@ -1,20 +1,18 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { User } from '../../interfaces/types';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { User } from "../../interfaces/types";
 
 const initialState: User = {
   vkID: null,
   role: null,
-  name: '',
+  name: "",
 };
 
 const userSlice = createSlice({
-  name: 'user',
+  name: "user",
   initialState,
   reducers: {
     initUser(state, action: PayloadAction<User>) {
-      console.log(action.payload);
       state = action.payload;
-      console.log(state);
     },
   },
 });

@@ -12,30 +12,32 @@ import React, { useState } from 'react';
 interface IDropdownNoteProps {
   onEditClick: () => void;
   onDeleteClick: () => void;
-  onMemoClick: () => void;
+  onDoctorNoteClick: () => void;
   onProtocolClick: () => void;
   isOwner: boolean;
   isMedic: boolean;
+  isJournalComplete?: boolean;
 }
 
 export const DropdownNote = ({
   onEditClick,
   onDeleteClick,
-  onMemoClick,
+  onDoctorNoteClick,
   onProtocolClick,
   isOwner,
   isMedic,
+  isJournalComplete = false,
 }: IDropdownNoteProps) => {
   const [shown, setShown] = useState<boolean>(false);
-
+  const protocolFlag = (isMedic && isOwner) || !(isMedic || isOwner);
   return (
     <Popover
-      action="click"
+      action="hover"
       shown={shown}
       onShownChange={setShown}
       content={
         <ButtonGroup mode="vertical" align="left">
-          {isOwner && (
+          {!isJournalComplete && isOwner && (
             <Button
               size="l"
               before={<Icon24WriteOutline />}
@@ -53,7 +55,6 @@ export const DropdownNote = ({
           )}
           {isMedic && (
             <Button
-              disabled
               size="l"
               before={<Icon24ArticleBoxOutline />}
               appearance="accent"
@@ -62,28 +63,29 @@ export const DropdownNote = ({
               stretched
               onClick={(e) => {
                 e.stopPropagation();
-                onMemoClick();
+                onDoctorNoteClick();
               }}
             >
-              Заметки
+              Памятки
             </Button>
           )}
-          <Button
-            size="l"
-            before={<Icon24NewsfeedMusicNoteOutline />}
-            appearance="accent"
-            mode="tertiary"
-            align="left"
-            stretched
-            disabled
-            onClick={(e) => {
-              e.stopPropagation();
-              onProtocolClick();
-            }}
-          >
-            Протокол
-          </Button>
-          {isOwner && (
+          {protocolFlag && (
+            <Button
+              size="l"
+              before={<Icon24NewsfeedMusicNoteOutline />}
+              appearance="accent"
+              mode="tertiary"
+              align="left"
+              stretched
+              onClick={(e) => {
+                e.stopPropagation();
+                onProtocolClick();
+              }}
+            >
+              Протокол
+            </Button>
+          )}
+          {!isJournalComplete && isOwner && (
             <Button
               size="l"
               before={<Icon24DoNotDisturb fill="red" />}
@@ -93,6 +95,7 @@ export const DropdownNote = ({
               stretched
               onClick={(e) => {
                 e.stopPropagation();
+                setShown(false);
                 onDeleteClick();
               }}
             >
@@ -103,16 +106,19 @@ export const DropdownNote = ({
       }
     >
       <IconButton
-        hasActive={false}
-        hasHover={false}
+        hasActive
+        hasHover
         size={24}
-        style={{ display: 'flex' }}
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          marginRight: '2px',
+        }}
       >
         <Icon24MoreVertical
           width={24}
           height={24}
           onClick={(e) => e.stopPropagation()}
-          fill="black"
         />
       </IconButton>
     </Popover>
